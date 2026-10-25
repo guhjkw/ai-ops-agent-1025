@@ -2,7 +2,7 @@
 
 An AI ops agent for an invented marketing and web agency, **Fernway Digital**. It reads every inbound email and website form and works out what each one is. It pulls out the details, checks the CRM, and decides what to do under the agency's own rules: update the CRM, open a ticket, draft a bill, move a meeting, archive or quarantine. Anything risky goes to a person, with its reasoning. Every step is shown as a live run trace and logged with personal details masked.
 
-**Live:** not deployed yet (deploy needs Taiwo's yes).
+**Live:** https://guhjkw.github.io/ai-ops-agent-1025/
 
 ## What it does
 | Message | What the agent does | Why (the rule) |
