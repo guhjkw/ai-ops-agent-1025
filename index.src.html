@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relay · AI ops agent demo</title>
+<meta name="description" content="Portfolio demo: an AI ops agent that reads every email and form, classifies it, updates the CRM, opens tickets, drafts bills, moves meetings and hands the risky ones to a person, with every step logged. Invented agency, real working logic.">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#07070c;--bg2:#0b0b13;--s1:#11111b;--s2:#161623;--s3:#1d1d2e;--s4:#262639;
+  --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.13);--line3:rgba(255,255,255,.2);
+  --text:#f0f0f7;--muted:#a1a1b8;--faint:#6c6c85;
+  --acc:#a493ff;--acc2:#d2c8ff;--accInk:#160f3d;--accSoft:rgba(164,147,255,.13);--accLine:rgba(164,147,255,.38);
+  --ok:#3ddc97;--okSoft:rgba(61,220,151,.13);--warn:#ffc35a;--warnSoft:rgba(255,195,90,.13);
+  --bad:#ff6b7d;--badSoft:rgba(255,107,125,.14);--info:#6fb6ff;--infoSoft:rgba(111,182,255,.13);--gold:#e7b84a;
+  --r:20px;--r2:14px;
+  --shadow:0 40px 90px -40px rgba(0,0,0,.85),0 0 0 1px var(--line);
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:1320px;margin:0 auto;padding:0 24px}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--acc2);outline-offset:2px;border-radius:8px}
+section[id]{scroll-margin-top:80px}
+.ribbon{background:linear-gradient(90deg,#1a1240,#0d0d16 35%,#0d0d16 65%,#1a1240);border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.ribbon .wrap{display:flex;gap:10px;align-items:center;justify-content:center;padding-top:9px;padding-bottom:9px;flex-wrap:wrap;text-align:center}
+.ribbon b{color:var(--text)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px var(--accSoft);display:inline-block}
+header.nav{position:sticky;top:0;z-index:40;background:rgba(7,7,12,.8);backdrop-filter:saturate(160%) blur(14px);-webkit-backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.logo{width:34px;height:34px;border-radius:10px;background:conic-gradient(from 200deg,#6a5cff,#a493ff,#ff9bd2,#6a5cff);display:grid;place-items:center}
+.logo svg{width:18px;height:18px}
+.wm{font-weight:780;letter-spacing:-.02em;font-size:18px;line-height:1}
+.wm small{display:block;font-size:10px;letter-spacing:.3em;color:var(--faint);font-weight:650;margin-top:5px}
+.links{display:flex;gap:24px;font-size:14.5px;color:var(--muted)}
+.links a{text-decoration:none}.links a:hover{color:var(--text)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:10px 16px;font-weight:700;font-size:14.5px;border:1px solid var(--line2);background:var(--s2);text-decoration:none;white-space:nowrap}
+.btn.pri{background:linear-gradient(180deg,var(--acc2),var(--acc));color:var(--accInk);border-color:transparent;box-shadow:0 10px 30px -12px rgba(164,147,255,.6)}
+.btn.ghost:hover{border-color:var(--line3)}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.hero{position:relative;padding:40px 0 18px;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:-30% -10% auto -10%;height:720px;background:radial-gradient(620px 360px at 14% 22%,rgba(164,147,255,.18),transparent 70%),radial-gradient(520px 320px at 90% 0%,rgba(255,155,210,.10),transparent 70%);pointer-events:none}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:44px;align-items:end}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:var(--accSoft);color:var(--acc2);font-size:13px;font-weight:650;border:1px solid var(--accLine)}
+h1{font-size:clamp(34px,4.3vw,54px);line-height:1.04;letter-spacing:-.035em;margin:16px 0 14px;font-weight:820}
+h1 .hl{background:linear-gradient(100deg,var(--acc2),var(--acc) 55%,#ff9bd2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:18px;color:var(--muted);max-width:660px;margin:0}
+.lede b{color:var(--text);font-weight:650}
+.benefits{display:grid;gap:10px}
+.ben{display:flex;gap:13px;align-items:flex-start;padding:14px 16px;border-radius:var(--r2);background:var(--s1);border:1px solid var(--line)}
+.ben i{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--accSoft);color:var(--acc);font-style:normal;font-size:16px}
+.ben b{display:block;font-size:15px}
+.ben span{color:var(--muted);font-size:13.5px;line-height:1.45}
+
+/* console */
+.console{margin:22px auto 0;border-radius:24px;background:linear-gradient(180deg,#0e0e18,#09090f);border:1px solid var(--line2);box-shadow:0 60px 120px -50px rgba(0,0,0,.95),0 0 0 6px #0b0b12,0 0 0 7px var(--line2);overflow:hidden}
+.cbar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02);flex-wrap:wrap}
+.lights{display:flex;gap:6px}.lights i{width:11px;height:11px;border-radius:50%;background:#3a3a4f}
+.ctitle{font-weight:750;font-size:14px}
+.ctitle small{color:var(--faint);font-weight:600;margin-left:6px}
+.cbar .sp{flex:1}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-bottom:1px solid var(--line)}
+.metric{padding:12px 16px;border-right:1px solid var(--line)}
+.metric:last-child{border-right:0}
+.metric b{display:block;font:750 24px/1.1 var(--mono);letter-spacing:-.02em}
+.metric span{font-size:12px;color:var(--muted)}
+.metric.ok b{color:var(--ok)}.metric.warn b{color:var(--warn)}.metric.bad b{color:var(--bad)}
+.cgrid{display:grid;grid-template-columns:330px minmax(0,1fr) 350px;min-height:640px}
+.col{min-width:0;border-right:1px solid var(--line)}
+.col:last-child{border-right:0}
+.chd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:750}
+.inbox{list-style:none;margin:0;padding:6px;max-height:640px;overflow:auto}
+.it{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:background .2s,border-color .2s}
+.it:hover{background:var(--s1)}
+.it.sel{background:var(--accSoft);border-color:var(--accLine)}
+.it.running{box-shadow:inset 3px 0 0 var(--acc)}
+.ch{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--s3);font-size:13px}
+.it .who{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .tm{font:11px var(--mono);color:var(--faint);text-align:right}
+.st{display:inline-block;margin-top:5px;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:3px 7px;border-radius:999px;background:var(--s3);color:var(--muted);white-space:nowrap}
+.st.done{background:var(--okSoft);color:var(--ok)}.st.needs_approval{background:var(--warnSoft);color:var(--warn)}
+.st.escalated{background:var(--badSoft);color:#ffb0bb}.st.blocked{background:rgba(255,255,255,.08);color:#d8d8e6}.st.running{background:var(--accSoft);color:var(--acc2)}
+/* trace */
+.tr{padding:14px 16px}
+.mhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.mhead h4{margin:0;font-size:17px;letter-spacing:-.01em}
+.mhead .meta{font-size:12.5px;color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:12px;padding:4px 9px;border-radius:999px;background:var(--s3);border:1px solid var(--line);color:#d6d6e6}
+.chip b{color:var(--acc2);font-weight:700}
+.pipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px;position:relative}
+.node{position:relative;padding:10px 11px;border-radius:12px;background:var(--s1);border:1px solid var(--line);min-height:84px;opacity:.38;transition:opacity .25s,border-color .25s,background .25s,transform .25s}
+.node.on{opacity:1;border-color:var(--line2)}
+.node.live{border-color:var(--acc);background:linear-gradient(180deg,rgba(164,147,255,.14),var(--s1));transform:translateY(-2px);box-shadow:0 12px 30px -16px rgba(164,147,255,.8)}
+.node.retry{border-color:var(--warn)}
+.node .nh{display:flex;justify-content:space-between;gap:6px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:800}
+.node .nh .ms{letter-spacing:0;text-transform:none;font:600 10.5px var(--mono);color:var(--faint);white-space:nowrap;flex:none}
+.node .nh span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.node .nb{margin-top:6px;font-size:12.5px;line-height:1.4;color:#dcdcea;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+.node.sys .nh{color:var(--acc2)}
+.node i.k{position:absolute;right:10px;bottom:8px;font-style:normal;font-size:10px;color:var(--faint)}
+.conf{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11.5px;color:var(--faint)}
+.conf .bar{flex:1;height:5px;border-radius:5px;background:var(--s3);overflow:hidden}
+.conf .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.dec{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:var(--s1)}
+.dec h5,.msgbox h5{margin:0;padding:10px 12px;border-bottom:1px solid var(--line);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.act{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);align-items:start}
+.act:last-child{border-bottom:0}
+.mode{font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:4px 8px;border-radius:7px;white-space:nowrap;margin-top:1px}
+.mode.auto{background:var(--okSoft);color:var(--ok)}.mode.approval{background:var(--warnSoft);color:var(--warn)}.mode.human{background:var(--badSoft);color:#ffb0bb}
+.act b{display:block;font-size:13.5px;font-weight:650}
+.act span{font-size:12px;color:var(--muted)}
+.msgbox{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:var(--s1)}
+.msgbox pre{margin:0;padding:12px;white-space:pre-wrap;font:13px/1.5 var(--sans);color:#d9d9e8;max-height:200px;overflow:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.empty b{color:var(--text)}
+/* right column */
+.queue{list-style:none;margin:0;padding:8px;display:grid;gap:8px;max-height:330px;overflow:auto}
+.ap{border:1px solid var(--line);border-radius:12px;background:var(--s1);padding:10px 11px}
+.ap.new{animation:pop .4s ease-out}
+@keyframes pop{from{transform:scale(.97);opacity:0}}
+.ap .ah{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--faint);font-weight:700}
+.ap p{margin:5px 0 4px;font-size:13px;line-height:1.4}
+.ap .why{font-size:11.5px;color:var(--muted)}
+.ap .row{display:flex;gap:6px;margin-top:8px}
+.ap .row .btn{flex:1}
+.ap.done{opacity:.55}
+.ap .res{font-size:12px;color:var(--ok);margin-top:6px}
+.tabs{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tabs button{padding:5px 9px;border-radius:8px;border:1px solid transparent;background:transparent;font-size:12px;font-weight:700;color:var(--muted)}
+.tabs button.on{background:var(--accSoft);color:var(--acc2);border-color:var(--accLine)}
+.tabs button .n{font:600 10.5px var(--mono);color:var(--faint);margin-left:3px}
+.sys{padding:8px;max-height:300px;overflow:auto}
+.sys table{width:100%;border-collapse:collapse;font-size:12px}
+.sys td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.sys tr.new td{background:rgba(164,147,255,.08)}
+.sys tr.new td:first-child{box-shadow:inset 2px 0 0 var(--acc)}
+.sys .muted{color:var(--muted)}
+.sys .tag{font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:6px;background:var(--s3);color:var(--muted)}
+.sys .tag.ok{background:var(--okSoft);color:var(--ok)}.sys .tag.warn{background:var(--warnSoft);color:var(--warn)}.sys .tag.bad{background:var(--badSoft);color:#ffb0bb}
+/* composer */
+.composer{display:none;padding:14px;border-top:1px solid var(--line);background:rgba(164,147,255,.04)}
+.composer.show{display:block}
+.composer .g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.composer input,.composer textarea,.composer select{width:100%;background:var(--s2);border:1px solid var(--line2);border-radius:10px;padding:9px 10px;font-size:13.5px}
+.composer textarea{min-height:110px;resize:vertical;margin-top:8px}
+.composer .err{color:#ffb0bb;font-size:12.5px;min-height:18px;margin-top:6px}
+.sugg{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.sugg button{font-size:12px;padding:5px 9px;border-radius:999px;border:1px solid var(--line2);background:var(--s1);color:var(--muted)}
+/* sections */
+.blk{padding:68px 0}
+.blk.alt{background:linear-gradient(180deg,var(--bg2),var(--bg));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:24px;flex-wrap:wrap}
+.sec-h h2{font-size:clamp(28px,3.3vw,40px);letter-spacing:-.03em;line-height:1.08;margin:8px 0 0;font-weight:800}
+.sec-h p{color:var(--muted);max-width:540px;margin:0}
+.kick{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);font-weight:750}
+.rules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.rule{padding:15px;border-radius:var(--r2);border:1px solid var(--line);background:var(--s1)}
+.rule label{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:14px}
+.rule label output{font-family:var(--mono);color:var(--acc2)}
+.rule p{margin:6px 0 10px;color:var(--muted);font-size:12.5px;line-height:1.45}
+.rule input[type=range]{width:100%;accent-color:var(--acc)}
+.switch{position:relative;width:44px;height:26px;flex:none}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.switch span{position:absolute;inset:0;border-radius:99px;background:var(--s4);transition:.2s;pointer-events:none}
+.switch span:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.switch input:checked+span{background:var(--acc)}
+.switch input:checked+span:after{left:21px}
+.rnote{margin-top:12px;color:var(--faint);font-size:13px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.breaks{margin-top:16px;padding:14px 16px;border-radius:14px;border:1px dashed var(--line2);background:rgba(17,17,27,.5)}
+.breaks ul{margin:0;padding-left:18px;color:var(--muted);font-size:13.5px;display:grid;gap:5px}
+.breaks h4{margin:0 0 8px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.step{padding:20px;border-radius:var(--r2);border:1px solid var(--line);background:var(--s1)}
+.step .n{font-family:var(--mono);color:var(--acc);font-size:13px;font-weight:700}
+.step h4{margin:8px 0 6px;font-size:17px}
+.step p{margin:0;color:var(--muted);font-size:14px}
+.step.you{border-color:var(--accLine);background:linear-gradient(180deg,rgba(164,147,255,.08),var(--s1))}
+.hood{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:start}
+.tree{font:13px/1.75 var(--mono);background:#06060b;border:1px solid var(--line);border-radius:var(--r2);padding:16px 18px;color:#bcbcd4;overflow-x:auto;white-space:pre}
+.tree b{color:var(--acc2);font-weight:600}
+.hood p{color:var(--muted);margin:0 0 12px}
+.checks{display:flex;gap:10px;flex-wrap:wrap}
+.checks span{padding:8px 12px;border-radius:10px;background:var(--okSoft);color:var(--ok);font-weight:700;font-size:13.5px;border:1px solid rgba(61,220,151,.25)}
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tier{position:relative;padding:24px;border-radius:var(--r);border:1px solid var(--line);background:var(--s1);display:flex;flex-direction:column}
+.tier.feat{border-color:rgba(231,184,74,.55);background:linear-gradient(180deg,rgba(231,184,74,.09),var(--s1) 40%);box-shadow:0 30px 70px -40px rgba(231,184,74,.45)}
+.tier .tag{position:absolute;top:-12px;left:24px;background:var(--gold);color:#241a02;font-size:11.5px;font-weight:800;letter-spacing:.08em;padding:4px 10px;border-radius:999px;text-transform:uppercase}
+.tier h4{margin:0;font-size:18px}
+.tier .for{color:var(--muted);font-size:13.5px;margin:4px 0 14px}
+.price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.price b{font-size:38px;letter-spacing:-.03em}
+.price s{color:var(--faint);font-size:15px}
+.tier ul{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:8px;font-size:14px;color:#d6d6e6}
+.tier li{display:flex;gap:9px}
+.tier li:before{content:"✓";color:var(--acc);font-weight:800}
+.tier li.bonus:before{content:"+";color:var(--gold)}
+.tier .ms{margin-top:auto;padding-top:16px;font-size:12.5px;color:var(--faint);border-top:1px solid var(--line)}
+.tier .ms b{color:var(--muted)}
+.cta{padding:34px;border-radius:24px;background:radial-gradient(500px 240px at 10% 0%,rgba(164,147,255,.2),transparent 70%),linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--accLine);display:grid;grid-template-columns:1.3fr 1fr;gap:30px;align-items:center}
+.cta h2{margin:0 0 10px;font-size:clamp(26px,3vw,36px);letter-spacing:-.03em;line-height:1.1}
+.cta p{color:var(--muted);margin:0 0 6px}
+.cta .urg{color:var(--warn);font-size:14px;margin-top:12px}
+.need{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.need li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:rgba(7,7,12,.5);border:1px solid var(--line);font-size:14px}
+.need li b{font-family:var(--mono);color:var(--acc)}
+footer{padding:40px 0 60px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+footer .scope{max-width:920px}
+footer b{color:var(--text)}
+@media (max-width:1180px){.cgrid{grid-template-columns:290px minmax(0,1fr)}.cgrid .col.right{grid-column:1 / -1;border-top:1px solid var(--line)}.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}.rules{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){
+  .hero .wrap,.hood,.cta,.two{grid-template-columns:minmax(0,1fr)}
+  .links{display:none}
+  .cgrid{grid-template-columns:minmax(0,1fr)}
+  .col{border-right:0;border-bottom:1px solid var(--line)}
+  .inbox{max-height:300px}
+  .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .metric:nth-child(3){border-right:0}
+  .steps,.tiers,.rules{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){
+  .wrap{padding:0 16px}
+  .ribbon .long{display:none}
+  .pipe{grid-template-columns:minmax(0,1fr)}
+  .composer .g{grid-template-columns:minmax(0,1fr)}
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric{border-right:0;border-bottom:1px solid var(--line)}
+  .cta{padding:22px}
+  .blk{padding:52px 0}
+  .cbar .btn{padding:7px 10px;font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="ribbon"><div class="wrap"><span class="dot"></span><b>Portfolio demo</b><span class="long">· Fernway Digital is an invented agency. The agent's logic is real code you can run.</span><span>· Press Run inbox</span></div></div>
+<header class="nav"><div class="wrap">
+  <a class="brand" href="#top"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#150f3a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5l2-5 3 10 2-5h4"/></svg></span><span class="wm">Relay<small>AI OPS AGENT · FERNWAY</small></span></a>
+  <nav class="links"><a href="#try">Try it</a><a href="#rules">Rules</a><a href="#how">How it works</a><a href="#offer">Pricing</a></nav>
+  <button class="btn pri sm" type="button" data-runall>Run inbox</button>
+</div></header>
+
+<section class="hero" id="top"><div class="wrap">
+  <div>
+    <span class="eyebrow"><span class="dot"></span>AI automation · live demo</span>
+    <h1>Every email and form, read, sorted and acted on. <span class="hl">You sign off on the risky ones.</span></h1>
+    <p class="lede">Relay is an AI ops agent for an invented agency. It's a live tool, not a video: press <b>Run inbox</b> and watch it read 12 messages, update the <b>CRM</b>, open <b>tickets</b>, draft <b>bills</b> and move <b>meetings</b>. Anything risky waits for a person, and every step is logged.</p>
+  </div>
+  <div class="benefits">
+    <div class="ben"><i>↻</i><div><b>Nothing slips through</b><span>Leads, change requests, bills and meeting moves are handled within about a minute of arriving.</span></div></div>
+    <div class="ben"><i>✋</i><div><b>You approve the risky stuff</b><span>Bills over your limit, refunds, unhappy clients and anything unclear wait for a person.</span></div></div>
+    <div class="ben"><i>☰</i><div><b>Every step logged</b><span>Each decision shows the rule behind it. Personal details are masked in the logs.</span></div></div>
+  </div>
+</div></section>
+
+<section id="try"><div class="wrap">
+  <div class="console" id="console">
+    <div class="cbar">
+      <span class="lights"><i></i><i></i><i></i></span>
+      <span class="ctitle">Relay · Fernway Digital ops <small id="clock" class="mono">Tue 27 Oct, 8:30 AM</small></span>
+      <span class="sp"></span>
+      <button class="btn pri sm" type="button" id="runAll" data-runall>Run inbox</button>
+      <button class="btn ghost sm" type="button" id="stepBtn">Run next</button>
+      <button class="btn ghost sm" type="button" id="writeBtn">Write your own</button>
+      <button class="btn ghost sm" type="button" id="resetBtn">Reset</button>
+    </div>
+    <div class="metrics" id="metrics"></div>
+    <div class="composer" id="composer">
+      <div class="g">
+        <input id="cName" placeholder="From name" value="Alex Rivera" aria-label="From name">
+        <input id="cEmail" placeholder="From email" value="alex@summitroof.example" aria-label="From email">
+      </div>
+      <div class="g" style="margin-top:8px">
+        <input id="cSubj" placeholder="Subject" value="Quote for SEO" aria-label="Subject">
+        <select id="cChan" aria-label="Channel"><option value="email">Email</option><option value="form">Website form</option></select>
+      </div>
+      <textarea id="cBody" aria-label="Message">Hi, I'm the owner at Summit Roofing. We need SEO and a new website, budget $3,000/month. Can we talk next week?</textarea>
+      <div class="sugg" id="sugg">
+        <button type="button" data-s="move">Move a call onto a busy time</button>
+        <button type="button" data-s="refund">Ask for a refund</button>
+        <button type="button" data-s="phish">Paste a phishing email</button>
+        <button type="button" data-s="junk">Send gibberish</button>
+      </div>
+      <div class="err" id="cErr" role="alert"></div>
+      <div style="display:flex;gap:8px;margin-top:6px"><button class="btn pri sm" type="button" id="cRun">Run the agent on it</button><button class="btn ghost sm" type="button" id="cClose">Close</button></div>
+    </div>
+    <div class="cgrid">
+      <div class="col">
+        <div class="chd"><span>Inbox</span><span id="inCount" class="mono">12</span></div>
+        <ul class="inbox" id="inbox"></ul>
+      </div>
+      <div class="col">
+        <div class="chd"><span>Run trace</span><span id="trTime" class="mono"></span></div>
+        <div class="tr" id="trace"><div class="empty"><b>Press Run inbox</b> to watch the agent work through all 12 messages, or click any message to run just that one.</div></div>
+      </div>
+      <div class="col right">
+        <div class="chd"><span>Waiting for you</span><span id="qCount" class="mono">0</span></div>
+        <ul class="queue" id="queue"><li class="empty" style="padding:22px 10px">Nothing waiting yet.</li></ul>
+        <div class="chd" style="border-top:1px solid var(--line)"><span>Connected systems</span><span class="mono" style="letter-spacing:0;text-transform:none">simulated</span></div>
+        <div class="tabs" id="tabs"></div>
+        <div class="sys" id="sys"></div>
+      </div>
+    </div>
+  </div>
+  <div class="breaks">
+    <h4>Try to break it</h4>
+    <ul>
+      <li>Press <b>Run inbox</b> twice. The second run changes nothing: no duplicate deals, tickets or emails.</li>
+      <li>Open <b>M-09</b>: the same web form sent twice becomes one deal, not two.</li>
+      <li>Open <b>M-05</b>: the accounting system fails once (429), and the agent waits and retries.</li>
+      <li>Write your own message that moves a call onto a busy time, asks for a refund, or is pure gibberish.</li>
+      <li>Change a rule below (for example the bill approval limit) and run the inbox again.</li>
+    </ul>
+  </div>
+</div></section>
+
+<section class="blk" id="rules"><div class="wrap">
+  <div class="sec-h"><div><span class="kick">Your rules, not the AI's mood</span><h2>Decide what it may do alone.</h2></div><p>These are real settings in the engine. Change one, press Run with these rules, and watch the same inbox go differently. A delivered build is set up with your own limits and people.</p></div>
+  <div class="rules">
+    <div class="rule"><label for="rConf">Confidence needed <output id="oConf">0.70</output></label><p>Below this, a person reviews the message instead of the agent acting.</p><input type="range" id="rConf" min="0.5" max="0.95" step="0.05" value="0.7"></div>
+    <div class="rule"><label for="rLimit">Bill approval limit <output id="oLimit">$500</output></label><p>Bills above this wait for finance. The agent drafts bills but never pays them.</p><input type="range" id="rLimit" min="0" max="5000" step="100" value="500"></div>
+    <div class="rule"><label for="rHigh">High-value lead <output id="oHigh">$5,000</output></label><p>Leads at or above this monthly value alert the account manager.</p><input type="range" id="rHigh" min="1000" max="20000" step="500" value="5000"></div>
+    <div class="rule"><label>Reply to clients alone <span class="switch"><input type="checkbox" id="rClients" checked aria-label="Reply to clients alone"><span></span></span></label><p>Acknowledgements and meeting confirmations to existing clients go out without waiting.</p></div>
+    <div class="rule"><label>Reply to new leads alone <span class="switch"><input type="checkbox" id="rLeads" aria-label="Reply to new leads alone"><span></span></span></label><p>Off: first replies to new leads wait for your approval.</p></div>
+    <div class="rule"><label>Escalate cancellation talk <span class="switch"><input type="checkbox" id="rChurn" checked aria-label="Escalate cancellation talk"><span></span></span></label><p>"We will cancel" from a client goes straight to a person. No bot reply.</p></div>
+    <div class="rule"><label>Show an API failure <span class="switch"><input type="checkbox" id="rErr" checked aria-label="Show an API failure"><span></span></span></label><p>Makes the accounting system fail once, so you can see the retry.</p></div>
+    <div class="rule" style="display:flex;flex-direction:column;justify-content:center;gap:10px"><button class="btn pri" type="button" id="rerun">Run the inbox with these rules</button><span style="font-size:12.5px;color:var(--faint)">Starts the same 12 messages over from a clean slate.</span></div>
+  </div>
+  <p class="rnote" id="rNote">Changes apply to the next run.</p>
+</div></section>
+
+<section class="blk alt" id="how"><div class="wrap">
+  <div class="sec-h"><div><span class="kick">How it works</span><h2>Four steps, one of them yours.</h2></div></div>
+  <div class="steps">
+    <div class="step"><span class="n">01</span><h4>It reads</h4><p>Email, website forms and attachments, the moment they arrive, from your inbox and your site.</p></div>
+    <div class="step"><span class="n">02</span><h4>It understands</h4><p>What kind of message it is, how sure it is, and the details that matter: company, budget, invoice number, dates.</p></div>
+    <div class="step"><span class="n">03</span><h4>It acts or asks</h4><p>Updates the CRM, helpdesk, accounting and calendar, or puts the decision in your queue with its reasoning.</p></div>
+    <div class="step you"><span class="n">04 · You</span><h4>You set the rules</h4><p>Your limits, your people and your tone. Approve or reject from the queue, Slack or email.</p></div>
+  </div>
+</div></section>
+
+<section class="blk" id="built"><div class="wrap hood">
+  <div>
+    <div class="sec-h" style="margin-bottom:14px"><div><span class="kick">Under the hood</span><h2>One engine. Tested.</h2></div></div>
+    <p>The page and the tests load the <b>same</b> engine file, so what you just ran is exactly what was tested. In a delivered build the reading and understanding steps run on Claude inside n8n or Make; the rules, approval queue, retries and logs stay exactly as they are here. Hand <span class="mono">src/</span> and <span class="mono">tests/</span> to your developer, or never open them.</p>
+    <div class="checks"><span>60 engine checks pass</span><span id="chkBrowser">36 browser checks pass</span><span id="dataCheck">Data check: 0 rows skipped</span></div>
+  </div>
+  <div class="tree"><b>index.html</b>             this console
+<b>src/agentEngine.js</b>     classify, extract, match, decide,
+                       act, approvals, retries, logs
+<b>data/inbox.json</b>        invented agency, inbox, CRM,
+                       helpdesk, accounting, calendar
+<b>tests/verify.js</b>        engine checks (node)
+<b>tests/browser-check.py</b> checks that drive this page</div>
+</div></section>
+
+<section class="blk alt" id="offer"><div class="wrap">
+  <div class="sec-h"><div><span class="kick">Your ops agent</span><h2>Three ways to start.</h2></div><p>Fixed prices, paid by milestone. AI and automation platform usage is billed to your own accounts at cost.</p></div>
+  <div class="tiers">
+    <div class="tier">
+      <h4>Inbox agent pilot</h4><p class="for">One inbox, the three message types that cost you the most time.</p>
+      <div class="price"><b>$2,500</b></div>
+      <ul><li>Reads one inbox and your website form</li><li>Three message types, your rules</li><li>CRM updates and Slack alerts</li><li>Approval queue for anything risky</li><li>14 days of tuning after go-live</li></ul>
+      <p class="ms"><b>Milestones:</b> $750 rules and test mode · $1,125 live after your sign-off · $625 after 14 days</p>
+    </div>
+    <div class="tier feat">
+      <span class="tag">Best value</span>
+      <h4>Ops agent</h4><p class="for">Everything in this demo, on your own tools.</p>
+      <div class="price"><b>$5,000</b><s>worth $10,000+</s></div>
+      <ul><li>Email, forms and attachments</li><li>CRM, helpdesk, accounting and calendar (HubSpot, HighLevel, Xero, QuickBooks or yours, via their APIs)</li><li>Approval queue in Slack or email</li><li>Retries, duplicate protection and masked logs</li><li>Weekly report of what it handled</li><li>30 days of tuning on real messages</li><li class="bonus">Your rules written up for you</li><li class="bonus">Built in n8n or Make, so your team can see every step</li><li class="bonus">Recorded walkthrough for your team</li></ul>
+      <p class="ms"><b>Milestones:</b> $1,500 rules, test mode and dry runs · $2,250 live after your sign-off · $1,250 after 30 days</p>
+    </div>
+    <div class="tier">
+      <h4>Multi-team</h4><p class="for">Several inboxes, brands or departments.</p>
+      <div class="price"><b>$9,500</b></div>
+      <ul><li>Everything in Ops agent</li><li>Routing by team and brand</li><li>Shared and personal inboxes</li><li>Monthly accuracy review</li><li>60 days of tuning and care</li></ul>
+      <p class="ms"><b>Milestones:</b> four payments of $2,375</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="blk" id="start"><div class="wrap">
+  <div class="cta">
+    <div>
+      <h2>See it run on your own inbox.</h2>
+      <p>Send me 20 anonymised messages from a normal week and the rules you would want. I'll load them into this console so you can watch the agent work through your real mix before you decide.</p>
+      <p class="urg">A pilot goes live in about two weeks, starting in test mode where nothing is sent.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><a class="btn pri" href="#try">Run it again</a><a class="btn ghost" href="#offer">See pricing</a></div>
+    </div>
+    <div>
+      <p style="font-weight:700;color:var(--text);margin-bottom:10px">What I need from you to start</p>
+      <ul class="need">
+        <li><b>1</b>20 sample messages (names removed is fine)</li>
+        <li><b>2</b>What it may do alone, and what needs you</li>
+        <li><b>3</b>Access to the inbox, CRM and other tools</li>
+        <li><b>4</b>Who approves what, and where (Slack or email)</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p class="scope"><b>Honest scope.</b> Fernway Digital is invented for this portfolio demo. Its clients, messages, amounts, calendar and records are invented, and no real customer data is shown. The classification, extraction, matching, decisions, approvals, retries and masked logs are real code that passes automated checks. The connected systems are simulated in your browser: nothing is emailed, posted, billed or paid. So the demo runs without an API key, the reading and understanding steps use rules rather than a language model. A delivered build runs those steps on Claude inside n8n or Make, on the client's own tools, with access they provide during the build. No client build is shown or claimed.</p>
+  <p>Built by Taiwo, Pathfinder Automation Solutions.</p>
+</div></footer>
+
+<script id="fallback" type="application/json">__FALLBACK__</script>
+<script src="src/agentEngine.js"></script>
+<script>
+(function () {
+  'use strict';
+  var E = window.AgentEngine;
+  var Q = new URLSearchParams(location.search);
+  var FAST = Q.get('fast') === '1';
+  var PACE = Math.max(0.2, Math.min(3, +Q.get('pace') || 1));   // the walkthrough recorder uses ?pace to set the animation speed
+  var hooks = window.__demoHooks || {};
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var DATA, PROBLEMS = [], S;
+  var ICON = { email: '✉', form: '▤' };
+  var NODE_ORDER = ['Trigger', 'Read', 'Classify', 'Extract', 'Match', 'Decide'];
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, FAST ? Math.min(ms, 8) : ms); }); }
+  function mark(ev) { ev.t = performance.now(); ev.wall = performance.timeOrigin + ev.t; (window.__demoEvents = window.__demoEvents || []).push(ev); if (hooks.onEvent) { try { hooks.onEvent(ev); } catch (e) { } } }
+  function rules() {
+    return {
+      confidence: +$('#rConf').value, invoiceLimit: +$('#rLimit').value, highValueLead: +$('#rHigh').value,
+      autoReplyClients: $('#rClients').checked, autoReplyLeads: $('#rLeads').checked, escalateChurn: $('#rChurn').checked, simulateApiError: $('#rErr').checked
+    };
+  }
+  function fresh() {
+    S = { st: E.newState(DATA), items: DATA.inbox.slice(), status: {}, sel: null, running: false, gen: (S ? S.gen + 1 : 1), tab: 'crm', seen: snapshot(null), newIds: {}, extra: 0 };
+  }
+  function snapshot(st) {
+    if (!st) return {};
+    var o = {};
+    st.crm.deals.forEach(function (x) { o['deal:' + x.id] = 1; }); st.tickets.forEach(function (x) { o['t:' + x.id] = 1; }); st.bills.forEach(function (x) { o['b:' + x.id] = 1; });
+    st.alerts.forEach(function (x, i) { o['a:' + i] = 1; }); st.outbox.forEach(function (x, i) { o['o:' + i] = 1; });
+    return o;
+  }
+
+  // ------------------------------------------------------------ rendering
+  function renderInbox() {
+    $('#inCount').textContent = S.items.length;
+    $('#inbox').innerHTML = S.items.map(function (m) {
+      var st = S.status[m.id];
+      return '<li class="it' + (S.sel === m.id ? ' sel' : '') + (st === 'running' ? ' running' : '') + '" data-id="' + esc(m.id) + '" tabindex="0">' +
+        '<span class="ch" title="' + esc(m.channel) + '">' + (ICON[m.channel] || '✉') + '</span>' +
+        '<div style="min-width:0"><div class="who">' + esc(m.from.name) + '</div><div class="sub">' + esc(m.subject) + '</div>' +
+        '<span class="st ' + (st || '') + '">' + esc(st === 'running' ? 'Running' : st ? E.STATUS[st] : 'Queued') + '</span></div>' +
+        '<div class="tm">' + esc(m.id) + '<br>' + esc(m.received.slice(11)) + '</div></li>';
+    }).join('');
+  }
+  function renderMetrics() {
+    var m = E.metrics(S.st, S.items.length);
+    var withPerson = S.st.approvals.filter(function (a) { return a.status === 'pending' && a.mode === 'human'; }).length;
+    $('#metrics').innerHTML = [
+      ['', m.processed + '/' + m.inbox, 'processed'], ['ok', m.autoHandled, 'handled alone'], ['warn', m.waiting, 'waiting for you'],
+      ['bad', withPerson, 'with a person'], ['', m.duplicates, 'duplicates stopped'], ['', m.retries, 'API retries']
+    ].map(function (x) { return '<div class="metric ' + x[0] + '"><b>' + x[1] + '</b><span>' + x[2] + '</span></div>'; }).join('');
+    $('#qCount').textContent = S.st.approvals.filter(function (a) { return a.status === 'pending'; }).length;
+  }
+  function nodeHtml(s, on, live) {
+    var sys = ['CRM', 'Helpdesk', 'Email', 'Slack', 'Accounting', 'Calendar', 'Security', 'Approval', 'Hand off'].indexOf(s.name) >= 0;
+    var conf = s.name === 'Classify' && s.confidence != null ? '<div class="conf">conf<span class="bar"><i style="width:' + Math.round(s.confidence * 100) + '%"></i></span><span class="mono">' + s.confidence.toFixed(2) + '</span></div>' : '';
+    return '<div class="node' + (on ? ' on' : '') + (live ? ' live' : '') + (sys ? ' sys' : '') + (s.retried ? ' retry' : '') + '" data-node="' + esc(s.name) + '"><div class="nh"><span>' + esc(s.name) + '</span><span class="ms">' + s.ms + ' ms</span></div><div class="nb">' + esc(s.out) + '</div>' + conf + '</div>';
+  }
+  function renderTrace(id, upto) {
+    var run = S.st.runs[id], m = S.items.filter(function (x) { return x.id === id; })[0];
+    if (!m) return;
+    if (!run) {
+      $('#trace').innerHTML = header(m) + '<div class="empty" style="padding:26px 10px"><b>Not run yet.</b> Press <b>Run</b> to process this message.<div style="margin-top:12px"><button class="btn pri sm" type="button" data-run1="' + esc(id) + '">Run this message</button></div></div>' + original(m);
+      $('#trTime').textContent = '';
+      return;
+    }
+    var tr = run.trace, n = upto == null ? tr.length : upto;
+    var total = tr[tr.length - 1].at;
+    $('#trTime').textContent = (upto == null || upto >= tr.length ? total : tr[Math.max(0, n - 1)].at) + ' ms';
+    var nodes = tr.map(function (s, i) { return nodeHtml(s, i < n, i === n - 1 && upto != null && upto < tr.length); }).join('');
+    var acts = run.actions.map(function (a) { return '<div class="act"><span class="mode ' + a.mode + '">' + (a.mode === 'auto' ? 'DO NOW' : a.mode === 'approval' ? 'ASK YOU' : 'TO A PERSON') + '</span><div><b>' + esc(a.summary) + '</b><span>Rule: ' + esc(a.why) + '</span></div></div>'; }).join('');
+    var f = run.fields || {};
+    var chips = Object.keys(f).filter(function (k) { return ['email', 'tasks', 'meeting', 'period', 'refund'].indexOf(k) < 0; }).map(function (k) {
+      var v = k === 'amount' ? '$' + Number(f[k]).toLocaleString('en-US') + (f.period ? '/' + f.period : '') : k === 'phone' ? E.redact(f[k]) : Array.isArray(f[k]) ? f[k].join(', ') : f[k];
+      return '<span class="chip">' + esc(k) + ': <b>' + esc(v) + '</b></span>';
+    }).join('');
+    var reply = run.actions.filter(function (a) { return a.type === 'reply'; })[0];
+    $('#trace').innerHTML = header(m, run) + (chips ? '<div class="chips">' + chips + '</div>' : '') +
+      '<div class="pipe">' + nodes + '</div>' +
+      (n >= tr.length || upto == null ? '<div class="dec"><h5>What it decided, and why</h5>' + acts + '</div>' : '') +
+      (n >= tr.length || upto == null ? '<div class="two">' + original(m) + (reply ? '<div class="msgbox"><h5>' + (reply.mode === 'auto' ? 'Reply sent' : 'Reply drafted, waiting for you') + '</h5><pre>' + esc(reply.payload.body) + '</pre></div>' : '') + '</div>' : '');
+  }
+  function header(m, run) {
+    return '<div class="mhead"><div><h4>' + esc(m.subject) + '</h4><div class="meta">' + esc(m.id) + ' · ' + (m.channel === 'form' ? 'Website form' : 'Email') + ' from ' + esc(m.from.name) + ' · ' + esc(m.received.slice(11)) + '</div></div>' +
+      (run ? '<span class="st ' + run.status + '" style="margin:0">' + esc(E.STATUS[run.status]) + '</span>' : '') + '</div>';
+  }
+  function original(m) {
+    return '<div class="msgbox"><h5>The message</h5><pre>' + esc(m.body) + ((m.attachments || []).length ? '\n\n📎 ' + m.attachments.map(function (a) { return a.name; }).join(', ') : '') + '</pre></div>';
+  }
+  function renderQueue() {
+    var aps = S.st.approvals.slice().sort(function (a, b) { return (a.status === 'pending' ? 0 : 1) - (b.status === 'pending' ? 0 : 1); });
+    if (!aps.length) { $('#queue').innerHTML = '<li class="empty" style="padding:22px 10px">Nothing waiting yet.</li>'; return; }
+    $('#queue').innerHTML = aps.map(function (a) {
+      var pend = a.status === 'pending';
+      var yes = a.mode === 'human' ? 'Mark handled' : a.kind === 'reply' ? 'Approve and send' : a.kind === 'bill' ? 'Approve bill' : a.kind === 'refund' ? 'Approve refund' : 'Approve';
+      return '<li class="ap' + (pend ? '' : ' done') + (S.newIds['ap:' + a.id] ? ' new' : '') + '" data-ap="' + a.id + '"><div class="ah"><span>' + a.id + ' · ' + a.item + '</span><span>' + (a.mode === 'human' ? 'TO A PERSON' : a.kind.toUpperCase()) + '</span></div><p>' + esc(a.summary) + '</p><div class="why">' + esc(a.why) + '</div>' +
+        (pend ? '<div class="row"><button class="btn pri sm" type="button" data-yes="' + a.id + '">' + yes + '</button>' + (a.mode === 'human' ? '' : '<button class="btn ghost sm" type="button" data-no="' + a.id + '">Reject</button>') + '<button class="btn ghost sm" type="button" data-open="' + a.item + '">Open</button></div>' : '<div class="res">✓ ' + esc(a.result || a.status) + '</div>') + '</li>';
+    }).join('');
+    S.newIds = {};
+  }
+  var TABS = [['crm', 'CRM'], ['help', 'Helpdesk'], ['acc', 'Accounting'], ['cal', 'Calendar'], ['slack', 'Slack'], ['sent', 'Sent']];
+  function renderSystems() {
+    var st = S.st, seen = S.seen;
+    var counts = { crm: st.crm.deals.length, help: st.tickets.length, acc: st.bills.length, cal: st.calendar.events.length, slack: st.alerts.length, sent: st.outbox.length };
+    $('#tabs').innerHTML = TABS.map(function (t) { return '<button type="button" data-tab="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '">' + t[1] + '<span class="n">' + counts[t[0]] + '</span></button>'; }).join('');
+    var co = function (id) { var c = st.crm.companies.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
+    var rows = '';
+    if (S.tab === 'crm') rows = st.crm.deals.slice().reverse().map(function (d) { return '<tr class="' + (seen['deal:' + d.id] ? '' : 'new') + '"><td class="mono">' + d.id + '</td><td>' + esc(co(d.company)) + '<div class="muted">' + esc(d.name) + (d.notes ? ' · ' + esc(d.notes.join('; ')) : '') + '</div></td><td class="mono">' + (d.value ? '$' + d.value.toLocaleString('en-US') + (d.period === 'month' ? '/mo' : '') : '') + '</td><td><span class="tag ' + (d.stage === 'Won' ? 'ok' : 'warn') + '">' + esc(d.stage) + '</span></td></tr>'; }).join('');
+    if (S.tab === 'help') rows = st.tickets.slice().reverse().map(function (t) { return '<tr class="' + (seen['t:' + t.id] ? '' : 'new') + '"><td class="mono">' + t.id + '</td><td>' + esc(t.title) + '<div class="muted">' + esc(t.assignee) + (t.due ? ' · due ' + esc(E.niceDate(t.due)) : '') + '</div></td><td><span class="tag ' + (t.priority === 'urgent' ? 'bad' : t.priority === 'high' ? 'warn' : '') + '">' + esc(t.priority) + '</span></td></tr>'; }).join('');
+    if (S.tab === 'acc') rows = st.bills.slice().reverse().map(function (b) { return '<tr class="' + (seen['b:' + b.id] ? '' : 'new') + '"><td class="mono">' + b.id + '</td><td>' + esc(b.vendorName || 'Canvasly') + '<div class="muted">' + esc(b.number || '') + (b.due ? ' · due ' + esc(b.due) : '') + '</div></td><td class="mono">$' + Number(b.amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) + '</td><td><span class="tag ' + (/approved/.test(b.status) ? 'ok' : /waiting/.test(b.status) ? 'warn' : /rejected/.test(b.status) ? 'bad' : '') + '">' + esc(b.status) + '</span></td></tr>'; }).join('');
+    if (S.tab === 'cal') rows = st.calendar.events.slice().sort(function (a, b) { return (a.date + a.start).localeCompare(b.date + b.start); }).map(function (e) { return '<tr class="' + (e.moved ? 'new' : '') + '"><td class="mono">' + esc(E.niceDate(e.date).split(',')[0].slice(0, 3)) + ' ' + esc(E.clock(E.hm(e.start))) + '</td><td>' + esc(e.title) + (e.moved ? '<div class="muted">moved by the agent</div>' : '') + '</td></tr>'; }).join('');
+    if (S.tab === 'slack') rows = st.alerts.slice().reverse().map(function (a, i) { return '<tr class="new"><td><span class="tag ' + (a.level === 'urgent' || a.level === 'security' ? 'bad' : 'warn') + '">#ops</span></td><td>' + esc(a.text) + '</td></tr>'; }).join('') || '<tr><td class="muted">No alerts yet.</td></tr>';
+    if (S.tab === 'sent') rows = st.outbox.slice().reverse().map(function (o) { return '<tr class="new"><td>' + esc(E.redact(o.to)) + '<div class="muted">' + esc(o.subject) + '</div></td><td><span class="tag ' + (o.sentBy === 'you' ? 'ok' : '') + '">' + (o.sentBy === 'you' ? 'you approved' : 'agent') + '</span></td></tr>'; }).join('') || '<tr><td class="muted">Nothing sent yet.</td></tr>';
+    $('#sys').innerHTML = '<table>' + rows + '</table>';
+  }
+  function renderAll() { renderInbox(); renderMetrics(); renderQueue(); renderSystems(); }
+
+  // ------------------------------------------------------------ running
+  function runOne(id, gen) {
+    var m = S.items.filter(function (x) { return x.id === id; })[0];
+    if (!m) return Promise.resolve();
+    S.sel = id; S.status[id] = 'running'; renderInbox();
+    var before = snapshot(S.st);
+    var apBefore = S.st.approvals.length;
+    var r = E.run(S.st, m, rules());
+    mark({ who: 'agent', text: 'run', item: id, repeat: !!r.repeat });
+    var tr = S.st.runs[id].trace, i = 0;
+    function next() {
+      if (gen !== S.gen) return Promise.resolve();
+      i++;
+      renderTrace(id, i);
+      var s = tr[i - 1];
+      mark({ who: 'node', text: s.name, item: id, out: s.out });
+      if (i < tr.length) return wait((r.repeat ? 40 : Math.max(160, Math.min(900, s.ms * 2.2))) * PACE).then(next);
+      return Promise.resolve();
+    }
+    return next().then(function () {
+      if (gen !== S.gen) return;
+      S.status[id] = S.st.runs[id].status;
+      for (var k = apBefore; k < S.st.approvals.length; k++) S.newIds['ap:' + S.st.approvals[k].id] = 1;
+      S.seen = before;
+      renderTrace(id);
+      renderAll();
+      mark({ who: 'system', text: 'item-done', item: id, status: S.status[id] });
+    });
+  }
+  function runAll() {
+    if (S.running) return;
+    S.running = true; var gen = S.gen; setBusy(true);
+    var ids = S.items.map(function (m) { return m.id; }), k = 0;
+    mark({ who: 'system', text: 'run-all-start' });
+    function step() {
+      if (gen !== S.gen || k >= ids.length) return Promise.resolve();
+      return runOne(ids[k++], gen).then(function () { return wait(220 * PACE); }).then(step);
+    }
+    return step().then(function () { S.running = false; setBusy(false); mark({ who: 'system', text: 'run-all-done' }); });
+  }
+  function runNext() {
+    if (S.running) return;
+    var nx = S.items.filter(function (m) { return !S.st.runs[m.id]; })[0];
+    if (!nx) { flash('Every message has been processed. Run inbox again to see that nothing is duplicated, or Reset.'); return; }
+    S.running = true; setBusy(true);
+    runOne(nx.id, S.gen).then(function () { S.running = false; setBusy(false); });
+  }
+  function setBusy(b) { $$('[data-runall],#stepBtn,#rerun,#cRun').forEach(function (x) { x.disabled = b; }); }
+  function flash(t) { var el = $('#rNote'); el.textContent = t; }
+
+  function approve(id, yes) {
+    var r = E.decideApproval(S.st, id, yes);
+    if (!r.ok) { flash(r.error); return; }
+    var ap = r.approval; S.status[ap.item] = S.st.runs[ap.item] ? S.st.runs[ap.item].status : S.status[ap.item];
+    S.seen = snapshot(S.st);
+    renderAll(); if (S.sel === ap.item) renderTrace(ap.item);
+    mark({ who: 'system', text: yes ? 'approved' : 'rejected', item: ap.item, ap: id });
+  }
+
+  // ------------------------------------------------------------ composer
+  var SAMPLES = {
+    move: { name: 'Ravi Patel', email: 'ravi@northgatephysio.example', subj: 'Move our review?', chan: 'email', body: "Hi Priya, could we move Thursday's monthly review to Wednesday at 11am instead?" },
+    refund: { name: 'Ravi Patel', email: 'ravi@northgatephysio.example', subj: 'Refund please', chan: 'email', body: 'We were double charged $450 for October. Please refund it.' },
+    phish: { name: 'Account Team', email: 'alerts@secure-login.example', subj: 'Unusual sign-in', chan: 'email', body: 'Unusual sign-in detected. Verify your password within 24 hours at http://secure-login.example/verify or your account will be suspended.' },
+    junk: { name: 'Pat', email: 'pat@unknown.example', subj: 'hello', chan: 'email', body: 'asdf qwerty zxcv' }
+  };
+  function composeRun() {
+    var name = $('#cName').value.trim(), email = $('#cEmail').value.trim(), subj = $('#cSubj').value.trim(), body = $('#cBody').value.trim();
+    var errs = [];
+    if (!name) errs.push('a sender name');
+    if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) errs.push('a valid sender email');
+    if (!body) errs.push('a message');
+    if (errs.length) { $('#cErr').textContent = 'Add ' + errs.join(', ') + ' first.'; return; }
+    $('#cErr').textContent = '';
+    S.extra++;
+    var hh = 8 * 60 + 30 + S.extra * 3;
+    var m = { id: 'NEW-' + S.extra, channel: $('#cChan').value, received: '2026-10-27T' + ('0' + Math.floor(hh / 60)).slice(-2) + ':' + ('0' + hh % 60).slice(-2), from: { name: name, email: email.toLowerCase() }, subject: subj || '(no subject)', body: body };
+    S.items.unshift(m); renderInbox();
+    S.running = true; setBusy(true);
+    runOne(m.id, S.gen).then(function () { S.running = false; setBusy(false); });
+  }
+
+  function init() {
+    fresh();
+    $$('[data-runall]').forEach(function (b) { b.onclick = function () { if (S.running) return; if (b.closest('header')) $('#try').scrollIntoView({ behavior: 'smooth' }); runAll(); }; });
+    $('#stepBtn').onclick = runNext;
+    $('#resetBtn').onclick = function () { fresh(); renderAll(); $('#trace').innerHTML = '<div class="empty"><b>Reset.</b> Press Run inbox to start again from a clean slate.</div>'; $('#trTime').textContent = ''; setBusy(false); };
+    $('#writeBtn').onclick = function () { $('#composer').classList.toggle('show'); };
+    $('#cClose').onclick = function () { $('#composer').classList.remove('show'); };
+    $('#cRun').onclick = function () { if (!S.running) composeRun(); };
+    $('#sugg').onclick = function (e) { var b = e.target.closest('[data-s]'); if (!b) return; var s = SAMPLES[b.getAttribute('data-s')]; $('#cName').value = s.name; $('#cEmail').value = s.email; $('#cSubj').value = s.subj; $('#cChan').value = s.chan; $('#cBody').value = s.body; };
+    $('#inbox').onclick = function (e) {
+      var li = e.target.closest('[data-id]'); if (!li) return;
+      var id = li.getAttribute('data-id'); S.sel = id; renderInbox();
+      if (S.st.runs[id] || S.running) renderTrace(id); else { S.running = true; setBusy(true); runOne(id, S.gen).then(function () { S.running = false; setBusy(false); }); }
+    };
+    $('#trace').onclick = function (e) { var b = e.target.closest('[data-run1]'); if (b && !S.running) { S.running = true; setBusy(true); runOne(b.getAttribute('data-run1'), S.gen).then(function () { S.running = false; setBusy(false); }); } };
+    $('#queue').onclick = function (e) {
+      var y = e.target.closest('[data-yes]'), n = e.target.closest('[data-no]'), o = e.target.closest('[data-open]');
+      if (y) approve(y.getAttribute('data-yes'), true); else if (n) approve(n.getAttribute('data-no'), false); else if (o) { S.sel = o.getAttribute('data-open'); renderInbox(); renderTrace(S.sel); }
+    };
+    $('#tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) { S.tab = b.getAttribute('data-tab'); renderSystems(); } };
+    function out() {
+      $('#oConf').textContent = (+$('#rConf').value).toFixed(2); $('#oLimit').textContent = '$' + (+$('#rLimit').value).toLocaleString('en-US'); $('#oHigh').textContent = '$' + (+$('#rHigh').value).toLocaleString('en-US');
+      flash('Saved. Press "Run the inbox with these rules" to see the difference.');
+    }
+    ['rConf', 'rLimit', 'rHigh', 'rClients', 'rLeads', 'rChurn', 'rErr'].forEach(function (id) { $('#' + id).addEventListener('input', out); $('#' + id).addEventListener('change', out); });
+    $('#rerun').onclick = function () { if (S.running) return; fresh(); renderAll(); $('#try').scrollIntoView({ behavior: 'smooth' }); runAll(); };
+    $('#dataCheck').textContent = 'Data check: ' + PROBLEMS.length + ' rows skipped';
+    renderAll();
+    window.__demo = { runAll: runAll, runOne: function (id) { return runOne(id, S.gen); }, approve: approve, state: function () { return S; } };
+  }
+  function load() {
+    fetch('data/inbox.json', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('no data'); return r.json(); })
+      .catch(function () { return JSON.parse(document.getElementById('fallback').textContent); })
+      .then(function (raw) { var p = E.prepare(raw); DATA = p.data; PROBLEMS = p.problems; init(); });
+  }
+  load();
+})();
+</script>
+</body>
+</html>

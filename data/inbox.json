@@ -1,0 +1,476 @@
+{
+  "_note": "Invented agency for a portfolio demo. Every company, person, email address, amount and calendar entry is made up. Email domains use the reserved .example domain; phone numbers use 555-01xx.",
+  "now": "2026-10-27T08:30",
+  "company": {
+    "name": "Fernway Digital",
+    "short": "Fernway",
+    "agent": "Relay",
+    "domain": "fernway.example",
+    "signoff": "Sam at Fernway Digital"
+  },
+  "rules": {
+    "confidence": 0.7,
+    "autoReplyClients": true,
+    "autoReplyLeads": false,
+    "invoiceLimit": 500,
+    "highValueLead": 5000,
+    "escalateChurn": true,
+    "simulateApiError": true
+  },
+  "team": [
+    {
+      "id": "sam",
+      "name": "Sam",
+      "role": "Founder"
+    },
+    {
+      "id": "priya",
+      "name": "Priya",
+      "role": "Account manager"
+    },
+    {
+      "id": "theo",
+      "name": "Theo",
+      "role": "Web team lead"
+    },
+    {
+      "id": "lena",
+      "name": "Lena",
+      "role": "Finance"
+    }
+  ],
+  "crm": {
+    "companies": [
+      {
+        "id": "C-1",
+        "name": "Harbor & Vine Bistro",
+        "domain": "harborvine.example",
+        "status": "client",
+        "owner": "priya"
+      },
+      {
+        "id": "C-2",
+        "name": "Northgate Physio",
+        "domain": "northgatephysio.example",
+        "status": "client",
+        "owner": "priya"
+      },
+      {
+        "id": "C-3",
+        "name": "Larkspur Legal",
+        "domain": "larkspurlegal.example",
+        "status": "client",
+        "owner": "sam"
+      }
+    ],
+    "contacts": [
+      {
+        "id": "P-1",
+        "name": "Ines Moreau",
+        "email": "ines@harborvine.example",
+        "company": "C-1"
+      },
+      {
+        "id": "P-2",
+        "name": "Ravi Patel",
+        "email": "ravi@northgatephysio.example",
+        "company": "C-2"
+      },
+      {
+        "id": "P-3",
+        "name": "Hannah Cole",
+        "email": "hannah@larkspurlegal.example",
+        "company": "C-3"
+      }
+    ],
+    "deals": [
+      {
+        "id": "D-101",
+        "company": "C-1",
+        "name": "Website care retainer",
+        "value": 2400,
+        "period": "month",
+        "stage": "Won"
+      },
+      {
+        "id": "D-102",
+        "company": "C-2",
+        "name": "Google Ads management",
+        "value": 3100,
+        "period": "month",
+        "stage": "Won"
+      },
+      {
+        "id": "D-103",
+        "company": "C-3",
+        "name": "SEO and content",
+        "value": 2800,
+        "period": "month",
+        "stage": "Won"
+      }
+    ]
+  },
+  "helpdesk": {
+    "tickets": [
+      {
+        "id": "T-201",
+        "title": "Add booking widget to Larkspur site",
+        "company": "C-3",
+        "assignee": "theo",
+        "priority": "normal",
+        "due": "2026-10-28",
+        "status": "open"
+      }
+    ]
+  },
+  "accounting": {
+    "vendors": [
+      {
+        "id": "V-1",
+        "name": "Pixelpine Studio",
+        "domain": "pixelpine.example",
+        "recurring": false
+      },
+      {
+        "id": "V-2",
+        "name": "Canvasly",
+        "domain": "canvasly.example",
+        "recurring": true,
+        "usual": 49
+      }
+    ],
+    "bills": [
+      {
+        "id": "B-301",
+        "vendor": "V-2",
+        "number": "CNV-87102",
+        "amount": 49,
+        "due": "2026-10-01",
+        "status": "paid"
+      }
+    ]
+  },
+  "calendar": {
+    "hours": [
+      "09:00",
+      "17:30"
+    ],
+    "events": [
+      {
+        "id": "E-1",
+        "title": "Weekly team standup",
+        "date": "2026-10-28",
+        "start": "09:30",
+        "end": "10:00"
+      },
+      {
+        "id": "E-2",
+        "title": "Harbor & Vine content shoot",
+        "date": "2026-10-28",
+        "start": "11:00",
+        "end": "12:30"
+      },
+      {
+        "id": "E-3",
+        "title": "Monthly review · Northgate Physio",
+        "date": "2026-10-29",
+        "start": "14:00",
+        "end": "15:00",
+        "company": "C-2"
+      },
+      {
+        "id": "E-4",
+        "title": "Strategy call · Larkspur Legal",
+        "date": "2026-10-30",
+        "start": "13:00",
+        "end": "14:00",
+        "company": "C-3"
+      },
+      {
+        "id": "E-5",
+        "title": "Payroll and invoices",
+        "date": "2026-10-30",
+        "start": "15:00",
+        "end": "16:00"
+      }
+    ]
+  },
+  "categories": {
+    "lead": {
+      "label": "New lead",
+      "keywords": [
+        "budget",
+        "new website",
+        "website",
+        "google ads",
+        "proposal",
+        "quote",
+        "pricing",
+        "looking for an agency",
+        "need a site",
+        "online ordering",
+        "seo",
+        "talk next week",
+        "can we talk",
+        "could we talk",
+        "per month",
+        "/month"
+      ]
+    },
+    "change_request": {
+      "label": "Change request",
+      "keywords": [
+        "swap",
+        "update the",
+        "change the",
+        "could you|0.5",
+        "can you|0.5",
+        "please add",
+        "replace",
+        "menu page",
+        "homepage",
+        "live by",
+        "by friday",
+        "by monday",
+        "typo",
+        "new photos"
+      ]
+    },
+    "complaint": {
+      "label": "Complaint",
+      "keywords": [
+        "paused",
+        "nobody told us",
+        "unacceptable",
+        "losing",
+        "not happy",
+        "disappointed",
+        "again",
+        "still broken",
+        "cancel",
+        "terminate",
+        "frustrated",
+        "fix this",
+        "isn't fixed"
+      ]
+    },
+    "invoice": {
+      "label": "Bill to pay",
+      "keywords": [
+        "invoice",
+        "amount due",
+        "due",
+        "receipt",
+        "renews",
+        "payment due",
+        "total",
+        "billing period"
+      ]
+    },
+    "meeting": {
+      "label": "Meeting change",
+      "keywords": [
+        "move",
+        "reschedule",
+        "push",
+        "something came up",
+        "instead",
+        "call",
+        "meeting",
+        "review",
+        "3pm",
+        "2pm",
+        "can we do"
+      ]
+    },
+    "refund": {
+      "label": "Refund request",
+      "keywords": [
+        "refund|3",
+        "charged twice|3",
+        "double charged|3",
+        "overcharged|2",
+        "money back|2",
+        "twice|1",
+        "last invoice|1.5",
+        "was wrong|1.5",
+        "seems off|1.5",
+        "billing error|2"
+      ]
+    },
+    "spam": {
+      "label": "Sales pitch / spam",
+      "keywords": [
+        "10x",
+        "rank #1",
+        "#1 on google",
+        "free audit",
+        "reply yes",
+        "guaranteed traffic",
+        "backlinks",
+        "we help agencies",
+        "limited offer",
+        "unsubscribe"
+      ]
+    },
+    "phishing": {
+      "label": "Phishing",
+      "keywords": [
+        "verify your password",
+        "account will be suspended",
+        "will be suspended",
+        "will be closed",
+        "within 24 hours",
+        "confirm your login",
+        "unusual sign-in",
+        "reset your password here"
+      ]
+    }
+  },
+  "inbox": [
+    {
+      "id": "M-01",
+      "channel": "email",
+      "received": "2026-10-27T07:02",
+      "from": {
+        "name": "Dana Whitaker",
+        "email": "dana@lakeshoredental.example"
+      },
+      "subject": "New website + Google Ads for 3 dental offices",
+      "body": "Hi Fernway team,\n\nI'm the operations director at Lakeshore Dental Group. We have three offices in Portland and need a new website plus Google Ads management. Our budget is about $8,000/month. Could we talk next week?\n\nBest,\nDana Whitaker\nOperations Director, Lakeshore Dental Group\n(503) 555-0148"
+    },
+    {
+      "id": "M-02",
+      "channel": "form",
+      "received": "2026-10-27T07:18",
+      "from": {
+        "name": "Marcus Lee",
+        "email": "marcus@pinecrestbakery.example"
+      },
+      "subject": "Website form: Pinecrest Bakery",
+      "body": "Name: Marcus Lee\nCompany: Pinecrest Bakery\nBudget: $1,500\nMessage: Need a simple site with online ordering before the holidays."
+    },
+    {
+      "id": "M-03",
+      "channel": "email",
+      "received": "2026-10-27T07:26",
+      "from": {
+        "name": "Ines Moreau",
+        "email": "ines@harborvine.example"
+      },
+      "subject": "Menu page update",
+      "body": "Hi Theo,\n\nCould you swap the hero photo on the homepage and update the prices on the menu page? The new menu is attached. We need it live by Friday.\n\nThanks!\nInes",
+      "attachments": [
+        {
+          "name": "winter-menu.pdf",
+          "text": "Winter menu. Braised short rib $34. Wild mushroom risotto $26. Pear tart $12."
+        }
+      ]
+    },
+    {
+      "id": "M-04",
+      "channel": "email",
+      "received": "2026-10-27T07:41",
+      "from": {
+        "name": "Ravi Patel",
+        "email": "ravi@northgatephysio.example"
+      },
+      "subject": "Ads paused AGAIN",
+      "body": "Our Google Ads have been paused for three days and nobody told us. We are losing patients every day. If this isn't fixed today we will cancel the contract.\n\nRavi"
+    },
+    {
+      "id": "M-05",
+      "channel": "email",
+      "received": "2026-10-27T07:55",
+      "from": {
+        "name": "Pixelpine Studio",
+        "email": "accounts@pixelpine.example"
+      },
+      "subject": "Invoice INV-2207 for October illustration work",
+      "body": "Hi Lena,\n\nPlease find attached invoice INV-2207 for $2,340.00 for the October illustration work, due November 15, 2026.\n\nThank you!\nPixelpine Studio",
+      "attachments": [
+        {
+          "name": "INV-2207.pdf",
+          "text": "Invoice INV-2207. Bill to: Fernway Digital. Illustration work, October. Total $2,340.00. Due 2026-11-15."
+        }
+      ]
+    },
+    {
+      "id": "M-06",
+      "channel": "email",
+      "received": "2026-10-27T08:01",
+      "from": {
+        "name": "Canvasly",
+        "email": "billing@canvasly.example"
+      },
+      "subject": "Your Canvasly receipt for November",
+      "body": "Your Team plan renews on November 1, 2026. Amount: $49.00. Invoice CNV-88213."
+    },
+    {
+      "id": "M-07",
+      "channel": "email",
+      "received": "2026-10-27T08:06",
+      "from": {
+        "name": "Hannah Cole",
+        "email": "hannah@larkspurlegal.example"
+      },
+      "subject": "Moving Friday's strategy call?",
+      "body": "Hi Sam,\n\nSomething came up. Could we move Friday's strategy call to Thursday at 3pm instead?\n\nHannah"
+    },
+    {
+      "id": "M-08",
+      "channel": "email",
+      "received": "2026-10-27T08:09",
+      "from": {
+        "name": "RankRocket",
+        "email": "growth@rankrocket.example"
+      },
+      "subject": "10x your traffic in 30 days",
+      "body": "We help agencies rank #1 on Google with guaranteed traffic. Reply YES for a free audit. Limited offer."
+    },
+    {
+      "id": "M-09",
+      "channel": "form",
+      "received": "2026-10-27T08:12",
+      "from": {
+        "name": "Marcus Lee",
+        "email": "marcus@pinecrestbakery.example"
+      },
+      "subject": "Website form: Pinecrest Bakery",
+      "body": "Name: Marcus Lee\nCompany: Pinecrest Bakery\nBudget: $1,500\nMessage: Need a simple site with online ordering before the holidays."
+    },
+    {
+      "id": "M-10",
+      "channel": "email",
+      "received": "2026-10-27T08:15",
+      "from": {
+        "name": "Jordan Blake",
+        "email": "jordan@altamesa.example"
+      },
+      "subject": "Quick question",
+      "body": "Hi, quick question about your SEO pricing, and also I think our last invoice from you was wrong?\n\nJordan"
+    },
+    {
+      "id": "M-11",
+      "channel": "email",
+      "received": "2026-10-27T08:19",
+      "from": {
+        "name": "IT Support",
+        "email": "it-helpdesk@mail-security.example"
+      },
+      "subject": "Action required: your mailbox will be suspended",
+      "body": "Unusual sign-in detected. Verify your password within 24 hours at http://mailbox-verify.example/login or your account will be suspended."
+    },
+    {
+      "id": "M-12",
+      "channel": "email",
+      "received": "2026-10-27T08:24",
+      "from": {
+        "name": "Ines Moreau",
+        "email": "ines@harborvine.example"
+      },
+      "subject": "Refund for setup fee?",
+      "body": "Hi Lena,\n\nWe were charged the $600 setup fee twice on our last invoice. Could you refund one of them?\n\nThanks,\nInes"
+    }
+  ]
+}

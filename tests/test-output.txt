@@ -1,0 +1,71 @@
+1. Data check and helpers
+PASS: sample inbox loads with no problems
+PASS: bad rows (duplicate id, bad sender, empty body) are skipped and reported
+PASS: emails are masked in logs
+PASS: phone numbers are masked in logs
+PASS: card-like numbers are masked in logs
+PASS: dates read naturally
+PASS: call slots skip busy times and land on two different weekdays
+PASS: Saturday is never offered for a call
+2. Classifying the 12 inbound items
+PASS: every item gets the expected category
+PASS: clear items are confident (0.75 or more)
+PASS: "pricing + our invoice was wrong" is flagged as two requests, low confidence
+PASS: a client mentioning Google Ads is not treated as a new lead
+PASS: a known vendor plus an invoice attachment is a bill
+PASS: a login request on an outside link is phishing
+PASS: a refund request that says "could you" is still a refund, not a change request
+3. Pulling out the details
+PASS: lead: company, role, phone and budget per month
+PASS: lead: what they want and how big they are
+PASS: website form: company and budget from the form fields
+PASS: change request: two tasks and "by Friday" becomes Friday 30 Oct
+PASS: change request: a menu price in the attachment is not taken as an amount
+PASS: bill: invoice number, total and due date (from the attachment)
+PASS: receipt: "renews on November 1, 2026" becomes the due date
+PASS: meeting: which call, from Friday to Thursday at 3 PM
+PASS: refund: the amount to refund
+4. Decisions and actions on the whole inbox
+PASS: M-01: CRM record and alert happen now, the reply waits for approval
+PASS: M-01: the $8,000/month deal is in the CRM
+PASS: M-01: the drafted reply offers the two real call slots
+PASS: M-02: small lead, no alert, reply waits for approval
+PASS: M-03: client change request becomes a ticket for Theo due Friday, acknowledgement sent
+PASS: M-04: "we will cancel" goes to a person; the holding reply is only a draft
+PASS: M-04: no automated message reaches the unhappy client
+PASS: M-05: $2,340 bill is drafted and waits for Lena; the agent never pays
+PASS: M-05: the accounting API failed once (429) and the agent retried
+PASS: M-06: the usual $49 receipt from a known vendor is approved by rule
+PASS: M-07: the strategy call moved to Thursday 3 PM and a confirmation went out
+PASS: M-08: the sales pitch is archived with no reply
+PASS: M-09: the repeat form is merged: still one Pinecrest deal and one reply draft
+PASS: M-10: two requests in one message go to a person, with the CRM mismatch noted
+PASS: M-11: phishing is quarantined, a security alert is raised, nothing is replied
+PASS: M-12: the refund needs a person; a billing ticket is opened for Lena
+PASS: only client acknowledgements went out without a person (2 emails)
+PASS: every step is in the trace, in order
+PASS: logs never hold a full email address or phone number
+5. Running twice changes nothing (idempotent)
+PASS: running the whole inbox again adds no records, emails or approvals
+6. Approvals
+PASS: approving the lead reply sends it (outbox +1) and closes M-01
+PASS: the same approval cannot be used twice
+PASS: rejecting the bill marks it rejected and sends nothing
+PASS: approving a refund never moves money: Lena issues it
+PASS: an unknown approval id is refused
+7. Your rules change what it does
+PASS: lead replies on: the M-01 reply goes out without waiting
+PASS: approval limit raised to $5,000: the $2,340 bill is approved by rule
+PASS: churn escalation off: M-04 gets a reviewed apology instead of a hand-off
+PASS: stricter confidence (0.95): more items go to a person
+PASS: simulated API error off: no retry
+PASS: high-value threshold $10,000: no alert for an $8,000/month lead
+8. Messages the agent has never seen
+PASS: a brand-new lead you type in is classified, extracted and put in the CRM
+PASS: moving a meeting onto a busy slot is refused and two free times are offered
+PASS: gibberish is never guessed at: a person reviews it
+9. Totals
+PASS: totals: 12 processed, 6 handled alone, 5 waiting for you, 2 with a person
+PASS: totals: 1 duplicate prevented, 1 retry, 1 blocked
+
+60 passed, 0 failed

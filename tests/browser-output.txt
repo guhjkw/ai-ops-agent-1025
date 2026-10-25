@@ -1,0 +1,47 @@
+0. HTML tag balance
+PASS: all tags closed and nested
+1. Page loads
+PASS: 12 inbound messages are listed, all queued
+PASS: totals start at zero
+PASS: data check reports 0 skipped rows
+PASS: the CRM starts with the three existing clients' deals
+2. Run the whole inbox
+PASS: totals: 12 processed, 6 handled alone, 5 waiting, 2 with a person
+PASS: 1 duplicate stopped and 1 API retry
+PASS: statuses match the decisions
+PASS: 7 items in the queue (5 approvals + 2 for a person)
+PASS: CRM: two new leads added (5 deals), the duplicate did not add a third
+PASS: Helpdesk: tickets for the change, the complaint and the refund
+PASS: only the two client acknowledgements were sent without a person
+3. Run trace
+PASS: M-05 trace shows the 429 and the retry
+PASS: M-05 trace goes Trigger > Read > Classify > Extract > Match > Decide
+PASS: every decision shows the rule behind it
+PASS: M-07: the reply sent confirms Thursday at 3 PM
+PASS: Calendar: the strategy call shows as moved by the agent
+PASS: M-09: the repeat form is a duplicate, merged with no second reply
+PASS: M-01: logs mask the phone number
+4. Approvals
+PASS: approving the M-01 reply sends it (3 sent) and M-01 is done
+PASS: rejecting the $2,340 bill marks it rejected in accounting
+PASS: the waiting count drops to 3
+5. Running again changes nothing
+PASS: a second run adds no deals
+PASS: a second run sends nothing new
+6. Write your own message
+PASS: an invalid sender email is refused with a reason
+PASS: a brand-new lead is processed: CRM deal at $3,000/month
+PASS: a pasted phishing email is blocked
+PASS: moving a call onto a busy time offers other times instead
+PASS: gibberish goes to a person, not a guess
+7. Rules change the outcome
+PASS: bill limit $5,000: the $2,340 bill is handled alone (M-05 done)
+PASS: rerun starts from a clean slate (12 items, composer items gone)
+PASS: lead replies on: the two lead replies also go out (4 sent)
+8. Phone layout
+PASS: no sideways scrolling on a phone
+PASS: console, trace nodes, queue and prices fit the screen
+PASS: still no sideways scrolling after a full run
+PASS: no console or page errors
+
+36 passed, 0 failed
